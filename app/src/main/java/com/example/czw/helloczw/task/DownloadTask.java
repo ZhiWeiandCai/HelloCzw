@@ -30,7 +30,7 @@ public class DownloadTask {
     private Context mContext;
     private FileInfo mFileInfo;
     private int mFinish;
-    public boolean mPause;
+    public volatile boolean mPause;
 
     public DownloadTask(Context context, FileInfo fileInfo) {
         mContext = context;
@@ -46,6 +46,7 @@ public class DownloadTask {
                 MyDatabaseManager.MyDbColumns.CONTENT_URI, null, selection, selectionArgs,
                 null);
         if (cursor == null || cursor.getCount() == 0) {
+            LogHelper.i(Tag, "-count=0");
             threadInfo = new ThreadInfo(0, mFileInfo.getUrl(), 0, 0,
                     mFileInfo.getLength());
         } else {
@@ -106,23 +107,25 @@ public class DownloadTask {
                 conn.setRequestMethod("GET");
                 //设置下载位置
                 int start = mThreadInfo.getStart() + mThreadInfo.getFinished();
-                conn.setRequestProperty("Range:", "bytes=" + start + "-" + mThreadInfo.getEnd());
+                conn.setRequestProperty("Range", "bytes=" + start + "-" + mThreadInfo.getEnd());
                 LogHelper.i(Tag, "start-end:" +"bytes=" + start + "-" + mThreadInfo.getEnd());
                 //设置文件写入位置
                 File file = new File(DownloadService.DownloadFile_path, mFileInfo.getFileName());
                 raf = new RandomAccessFile(file, "rwd");
                 raf.seek(start);
                 Intent intent = new Intent(DownloadService.DownloadUpdate);
-                mFinish += mThreadInfo.getFinished();
+                mFinish = mThreadInfo.getFinished();
                 //开始下载
-
-                if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                int responseCode = conn.getResponseCode();
+                LogHelper.i(Tag, "responseCode:" + responseCode);
+                if (responseCode == HttpURLConnection.HTTP_PARTIAL) {
 
                     InputStream is = conn.getInputStream();
                     byte[] buffer = new byte[1024 * 4];
                     int length = -1;
                     long time = System.currentTimeMillis();
                     while((length = is.read(buffer)) != -1) {
+
                         raf.write(buffer, 0, length);
                         mFinish += length;
 

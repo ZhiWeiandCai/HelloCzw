@@ -41,9 +41,14 @@ public class DownloadService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         //获得activity传来的参数
         if (DownloadStart.equals(intent.getAction())) {
-            FileInfo fileInfo = (FileInfo) intent.getSerializableExtra("file_info");
-            LogHelper.i(TAG, "start:" + fileInfo.toString());
-            new InitThread(fileInfo).start();
+            if (mDLTask != null && mDLTask.mPause == true) {
+                mDLTask.mPause = false;
+                mDLTask.download();
+            } else {
+                FileInfo fileInfo = (FileInfo) intent.getSerializableExtra("file_info");
+                LogHelper.i(TAG, "start:" + fileInfo.toString());
+                new InitThread(fileInfo).start();
+            }
         } else if (DownloadStop.equals(intent.getAction())) {
             FileInfo fileInfo = (FileInfo) intent.getSerializableExtra("file_info");
             LogHelper.i(TAG, "stop:" + fileInfo.toString());

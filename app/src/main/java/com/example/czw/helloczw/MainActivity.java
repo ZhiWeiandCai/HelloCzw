@@ -15,9 +15,8 @@ import com.example.czw.helloczw.model.FileInfo;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
-    private static final String FileUrl = "http://sw.bos.baidu.com/" +
-            "sw-search-sp/software/b625da79c2b30/kugou_8.1.45.19805_setup.exe";
-    private static final String FileName = "kugou_8.1.45.19805_setup.exe";
+    private static final String FileUrl = "http://www.imooc.com/mobile/appdown";
+    private static final String FileName = "mukewang.apk";
     private TextView mTvFileName;
     private ProgressBar mPbProgress;
     private Button mBtStop;
